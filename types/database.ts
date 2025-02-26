@@ -25,7 +25,7 @@ export interface Link {
   createdAt: Date
   updatedAt: Date
   expiresAt?: Date
-  status: "active" | "inactive" | "expired"
+  status: 'active' | 'inactive' | 'expired'
   settings: {
     redirectDelay: number
     password?: string
