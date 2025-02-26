@@ -14,11 +14,11 @@ import {
   Timestamp,
   increment,
 } from "firebase/firestore"
-import { db, BASE_URL } from "./config"
+import { db } from "./config"
 import type { Link } from "@/types/database"
 import { nanoid } from "nanoid"
 import { updateUserStats } from "./users"
-import { generateShortCode, getFullShortUrl } from '../utils/url'
+import { generateShortCode, getFullShortUrl, BASE_URL } from '../utils/url'
 
 interface LinkAnalytics {
   clicks: number
@@ -52,16 +52,6 @@ export interface Link {
   analytics: LinkAnalytics
   campaign?: string
   tags?: string[]
-}
-
-// Generate a random short code
-function generateShortCode(length = 6): string {
-  return nanoid(length)
-}
-
-// Add a function to get the full short URL
-export function getFullShortUrl(shortCode: string): string {
-  return `${BASE_URL}/${shortCode}`
 }
 
 export async function createLink(
