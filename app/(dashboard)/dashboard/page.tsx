@@ -19,6 +19,7 @@ interface DashboardStats {
   totalClicks: number
   earnings: number
   recentLinks: Link[]
+  topLinks: Link[]
   analytics: {
     clicksToday: number
     earningsToday: number
@@ -41,6 +42,7 @@ export default function DashboardPage() {
     totalClicks: 0,
     earnings: 0,
     recentLinks: [],
+    topLinks: [],
     analytics: {
       clicksToday: 0,
       earningsToday: 0,
