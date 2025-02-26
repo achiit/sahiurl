@@ -286,7 +286,7 @@ export default function IPWhitelistPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>{ip.addedBy}</TableCell>
-                  <TableCell>{ip.lastAccess ? ip.lastAccess.toLocaleDateString() : "Never"}</TableCell>
+                  <TableCell>{ip.lastAccessed ? ip.lastAccessed.toLocaleDateString() : "Never"}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="icon" onClick={() => handleRemoveIP(ip.id)}>
