@@ -76,3 +76,12 @@ export interface Payment {
   }
 }
 
+export interface WhitelistedIP {
+  id: string
+  userId: string
+  ipAddress: string
+  addedBy: string
+  lastAccessed: Date
+  createdAt: Date
+}
+
