@@ -5,7 +5,7 @@ export interface User extends FirebaseUser {
   email: string
   displayName?: string
   photoURL?: string
-  role: 'user' | 'admin'
+  role: 'user' | 'admin' | 'superadmin'
   subscription?: Subscription
   stats?: UserStats
   createdAt: Date
