@@ -47,7 +47,7 @@ export interface Link {
   createdAt: Date
   updatedAt: Date
   expiresAt?: Date
-  status: 'active' | 'inactive' | 'expired'
+  status: 'active' | 'inactive' | 'disabled' | 'expired'
   settings: LinkSettings
   analytics: LinkAnalytics
   campaign?: string
