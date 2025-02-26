@@ -26,10 +26,12 @@ export interface Link {
   userId: string
   originalUrl: string
   shortCode: string
-  shortUrl: string // Add this field
-  title?: string
+  shortUrl: string
   createdAt: Date
   updatedAt: Date
+  clicks?: number
+  title?: string
+  tags?: string[]
   expiresAt?: Date
   status: 'active' | 'inactive' | 'disabled' | 'expired'
   settings: {
