@@ -13,9 +13,24 @@ import TopLinks from "@/components/dashboard/top-links"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 
+interface DashboardStats {
+  totalLinks: number
+  totalClicks: number
+  earnings: number
+  user?: {
+    name: string
+    email: string
+  }
+}
+
 export default function DashboardPage() {
   const { user } = useAuth()
-  const [dashboardData, setDashboardData] = useState(null)
+  const [stats, setStats] = useState<DashboardStats>({
+    totalLinks: 0,
+    totalClicks: 0,
+    earnings: 0,
+    user: undefined
+  })
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
 
@@ -45,7 +60,7 @@ export default function DashboardPage() {
       }
       
       const data = await response.json()
-      setDashboardData(data.dashboardData)
+      setStats(data.dashboardData)
     } catch (error) {
       console.error("Error fetching dashboard data:", error)
       toast({
@@ -95,10 +110,10 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {dashboardData?.user?.stats?.totalLinks || 0}
+                {stats.totalLinks || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                {dashboardData?.recentLinks?.length > 0 ? `+${dashboardData?.recentLinks?.length} in the last 30 days` : 'No new links recently'}
+                {stats.recentLinks?.length > 0 ? `+${stats.recentLinks?.length} in the last 30 days` : 'No new links recently'}
               </p>
             </CardContent>
           </Card>
@@ -109,10 +124,10 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {dashboardData?.user?.stats?.totalClicks || 0}
+                {stats.totalClicks || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                {dashboardData?.analytics?.clicksToday > 0 ? `+${dashboardData?.analytics?.clicksToday} today` : 'No clicks today'}
+                {stats.analytics?.clicksToday > 0 ? `+${stats.analytics?.clicksToday} today` : 'No clicks today'}
               </p>
             </CardContent>
           </Card>
@@ -123,8 +138,8 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {dashboardData?.user?.stats?.totalLinks > 0
-                  ? `${((dashboardData?.user?.stats?.totalClicks / dashboardData?.user?.stats?.totalLinks) || 0).toFixed(2)}`
+                {stats.totalLinks > 0
+                  ? `${((stats.totalClicks / stats.totalLinks) || 0).toFixed(2)}`
                   : '0.00'}
               </div>
               <p className="text-xs text-muted-foreground">Clicks per link</p>
@@ -137,11 +152,11 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${(dashboardData?.user?.stats?.totalEarnings || 0).toFixed(2)}
+                ${(stats.earnings || 0).toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
-                {dashboardData?.analytics?.earningsToday > 0 
-                  ? `+$${dashboardData?.analytics?.earningsToday.toFixed(2)} today` 
+                {stats.analytics?.earningsToday > 0 
+                  ? `+$${stats.analytics?.earningsToday.toFixed(2)} today` 
                   : 'No earnings today'}
               </p>
             </CardContent>
@@ -166,7 +181,7 @@ export default function DashboardPage() {
                   <Skeleton className="h-[240px] w-full" />
                 ) : (
                   <ResponsiveContainer width="100%" height={240}>
-                    <LineChart data={dashboardData?.analytics?.clicksByDate || []}>
+                    <LineChart data={stats.analytics?.clicksByDate || []}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis 
                         dataKey="date" 
@@ -203,7 +218,7 @@ export default function DashboardPage() {
                   <Skeleton className="h-[240px] w-full" />
                 ) : (
                   <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={dashboardData?.analytics?.topCountries || []}>
+                    <BarChart data={stats.analytics?.topCountries || []}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="country" />
                       <YAxis />
@@ -228,7 +243,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <TopLinks links={dashboardData?.topLinks || []} />
+                  <TopLinks links={stats.topLinks || []} />
                 )}
               </CardContent>
             </Card>
@@ -244,7 +259,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <RecentLinks links={dashboardData?.recentLinks || []} />
+                  <RecentLinks links={stats.recentLinks || []} />
                 )}
               </CardContent>
             </Card>
