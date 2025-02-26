@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Globe, Link, BarChart3, DollarSign, ArrowUpRight, Info } from "lucide-react"
+import { Link as LucideLink, Globe, BarChart3, DollarSign, ArrowUpRight, Info } from "lucide-react"
 import DashboardShell from "@/components/dashboard/dashboard-shell"
 import RecentLinks from "@/components/dashboard/recent-links"
 import TopLinks from "@/components/dashboard/top-links"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
+import type { Link } from "@/lib/firebase/database-schema"
 
 interface DashboardStats {
   totalLinks: number
@@ -119,7 +120,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Links</CardTitle>
-              <Link className="h-4 w-4 text-muted-foreground" />
+              <LucideLink className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
