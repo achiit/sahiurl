@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Pin, Search, Megaphone, AlertCircle, MoreHorizontal } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
+import { User } from "@/types/database"
 
 // Dummy announcements data
 const announcements = [
@@ -43,7 +44,7 @@ const announcements = [
 ]
 
 export default function AnnouncementsPage() {
-  const { user } = useAuth()
+  const { user } = useAuth() as { user: User | null }
   const [searchQuery, setSearchQuery] = useState("")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const { toast } = useToast()
