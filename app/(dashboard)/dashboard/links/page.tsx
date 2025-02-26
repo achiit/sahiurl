@@ -224,8 +224,8 @@ export default function LinksPage() {
                   <TableCell>
                     <Badge 
                       variant={
-                        link.status === "active" ? "default" : 
-                        link.status === "inactive" ? "secondary" : 
+                        link.status === "active" ? "default" :
+                        (link.status === "inactive" || link.status === "disabled") ? "secondary" :
                         "destructive"
                       }
                     >
