@@ -15,6 +15,10 @@ import { formatDistanceToNow, format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "@/lib/firebase/database-schema"
 
+interface LinkStatus {
+  status: 'active' | 'inactive' | 'expired'
+}
+
 export default function LinkAnalyticsPage({ params }: { params: { id: string } }) {
   const { user } = useAuth()
   const { toast } = useToast()
