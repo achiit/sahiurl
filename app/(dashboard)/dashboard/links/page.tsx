@@ -123,6 +123,11 @@ export default function LinksPage() {
     (link.title && link.title.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
+  // Add this status normalization near the top of your component
+  const normalizeStatus = (status: string) => {
+    return status === 'disabled' ? 'inactive' : status
+  }
+
   return (
     <DashboardShell>
       <div className="flex items-center justify-between space-y-2">
@@ -225,11 +230,11 @@ export default function LinksPage() {
                     <Badge 
                       variant={
                         link.status === "active" ? "default" :
-                        (link.status === "inactive" || link.status === "disabled") ? "secondary" :
+                        ['inactive', 'disabled'].includes(link.status) ? "secondary" :
                         "destructive"
                       }
                     >
-                      {link.status}
+                      {normalizeStatus(link.status).toUpperCase()}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
