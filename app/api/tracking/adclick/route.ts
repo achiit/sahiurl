@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/firebase/admin"
+import { firestore } from "@/lib/firebase/admin"
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store the ad click in Firestore
-    await db.collection("adclicks").add({
+    await firestore.collection("adclicks").add({
       shortCode,
       position,
       timestamp: new Date(timestamp),
