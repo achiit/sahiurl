@@ -17,14 +17,17 @@ interface DashboardStats {
   totalLinks: number
   totalClicks: number
   earnings: number
-  recentLinks?: any[]
-  analytics?: {
+  recentLinks: Link[]
+  analytics: {
     clicksToday: number
     earningsToday: number
   }
   user?: {
-    name: string
+    displayName: string
     email: string
+    role: string
+    subscription?: string
+    stats?: any
   }
 }
 
@@ -123,7 +126,10 @@ export default function DashboardPage() {
                 {stats.totalLinks || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                {stats.recentLinks?.length > 0 ? `+${stats.recentLinks?.length} in the last 30 days` : 'No new links recently'}
+                {(stats.recentLinks && stats.recentLinks.length > 0) 
+                  ? `+${stats.recentLinks.length} in the last 30 days` 
+                  : 'No new links recently'
+                }
               </p>
             </CardContent>
           </Card>
