@@ -1,13 +1,19 @@
-export interface User {
+import { User as FirebaseUser } from "firebase/auth"
+
+export interface User extends FirebaseUser {
   uid: string
   email: string
+  displayName?: string
+  photoURL?: string
+  role: 'user' | 'admin'
+  subscription?: Subscription
+  stats?: UserStats
+  createdAt: Date
+  updatedAt: Date
   name: string
-  role: "user" | "admin" | "superadmin"
   balance: number
   totalEarnings: number
   pendingPayment: number
-  createdAt: Date
-  updatedAt: Date
   settings?: {
     emailNotifications: boolean
     paymentThreshold: number
