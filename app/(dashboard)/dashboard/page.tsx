@@ -17,6 +17,11 @@ interface DashboardStats {
   totalLinks: number
   totalClicks: number
   earnings: number
+  recentLinks?: any[]
+  analytics?: {
+    clicksToday: number
+    earningsToday: number
+  }
   user?: {
     name: string
     email: string
@@ -29,6 +34,11 @@ export default function DashboardPage() {
     totalLinks: 0,
     totalClicks: 0,
     earnings: 0,
+    recentLinks: [],
+    analytics: {
+      clicksToday: 0,
+      earningsToday: 0
+    },
     user: undefined
   })
   const [isLoading, setIsLoading] = useState(true)
