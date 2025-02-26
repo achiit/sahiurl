@@ -79,6 +79,9 @@ export default function LinkAnalyticsPage({ params }: { params: { id: string } }
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d']
 
+  // Normalize status so that "disabled" is treated as "inactive"
+  const normalizedStatus = linkData?.status === "disabled" ? "inactive" : linkData?.status;
+
   return (
     <DashboardShell>
       <div className="flex items-center justify-between space-y-2 mb-6">
@@ -180,14 +183,16 @@ export default function LinkAnalyticsPage({ params }: { params: { id: string } }
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Status</p>
-                  <Badge 
+                  <Badge
                     variant={
-                      linkData?.status === "active" ? "default" : 
-                      linkData?.status === "inactive" ? "secondary" : 
-                      "destructive"
+                      normalizedStatus === "active"
+                        ? "default"
+                        : normalizedStatus === "inactive"
+                        ? "secondary"
+                        : "destructive"
                     }
                   >
-                    {linkData?.status || 'Unknown'}
+                    {normalizedStatus?.toUpperCase() || "UNKNOWN"}
                   </Badge>
                 </div>
                 {linkData?.expiresAt && (
