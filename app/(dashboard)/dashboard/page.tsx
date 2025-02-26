@@ -23,6 +23,7 @@ interface DashboardStats {
     clicksToday: number
     earningsToday: number
     clicksByDate: Array<{ date: string; clicks: number }>
+    topCountries: Array<{ country: string; clicks: number }>
   }
   user?: {
     displayName: string
@@ -43,7 +44,8 @@ export default function DashboardPage() {
     analytics: {
       clicksToday: 0,
       earningsToday: 0,
-      clicksByDate: []
+      clicksByDate: [],
+      topCountries: []
     },
     user: undefined
   })
