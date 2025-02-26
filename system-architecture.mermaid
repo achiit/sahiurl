@@ -1,0 +1,69 @@
+graph TB
+    %% Core System Components
+    A["Frontend Layer"] --> B["API Gateway"]
+    B --> C["Service Layer"]
+    C --> D["Data Layer"]
+
+    %% Frontend Components
+    A -->|"React/Next.js"| A1["Admin Dashboard"]
+    A -->|"React/Next.js"| A2["Blog System"]
+    A -->|"React/Next.js"| A3["Landing Pages"]
+    
+    %% API Gateway Layer
+    B -->|"Rate Limiting"| B1["Authentication"]
+    B -->|"Validation"| B2["Request Handling"]
+    B -->|"Caching"| B3["Load Balancing"]
+
+    %% Service Components
+    C --> C1["Link Service"]
+    C --> C2["User Service"]
+    C --> C3["Analytics Service"]
+    C --> C4["Payment Service"]
+    C --> C5["Blog Service"]
+    C --> C6["Ad Service"]
+
+    %% Data Layer
+    D --> D1["Primary Database"]
+    D --> D2["Analytics Store"]
+    D3["Cache Layer"] --> D
+    D --> D4["File Storage"]
+
+    %% Monitoring & Analytics
+    M["Monitoring System"]
+    M -->|"Track"| M1["Performance"]
+    M -->|"Track"| M2["Errors"]
+    M -->|"Track"| M3["User Behavior"]
+    M -->|"Track"| M4["Business Metrics"]
+
+    %% Core Services Detail
+    C1 -->|"Manages"| L1["URL Shortening"]
+    C1 -->|"Manages"| L2["Redirection Logic"]
+    C1 -->|"Manages"| L3["Link Analytics"]
+
+    C2 -->|"Handles"| U1["Auth"]
+    C2 -->|"Handles"| U2["Roles"]
+    C2 -->|"Handles"| U3["Permissions"]
+
+    C3 -->|"Processes"| AN1["Visit Tracking"]
+    C3 -->|"Processes"| AN2["Ad Performance"]
+    C3 -->|"Processes"| AN3["Revenue Analytics"]
+
+    C4 -->|"Manages"| P1["Earnings"]
+    C4 -->|"Manages"| P2["Payouts"]
+    C4 -->|"Manages"| P3["Commissions"]
+
+    C5 -->|"Controls"| BL1["Templates"]
+    C5 -->|"Controls"| BL2["Content"]
+    C5 -->|"Controls"| BL3["Timers"]
+
+    C6 -->|"Handles"| AD1["Ad Placement"]
+    C6 -->|"Handles"| AD2["Ad Integration"]
+    C6 -->|"Handles"| AD3["Revenue Tracking"]
+
+    %% Style Definitions
+    classDef primary fill:#d0f4de,stroke:#333,stroke-width:2px
+    classDef secondary fill:#a7e8bd,stroke:#333,stroke-width:2px
+    classDef service fill:#64dfdf,stroke:#333,stroke-width:2px
+    class A,B,C,D primary
+    class A1,A2,A3,B1,B2,B3 secondary
+    class C1,C2,C3,C4,C5,C6 service

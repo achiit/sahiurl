@@ -1,0 +1,16 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "links",
+      "queryScope": "COLLECTION",
+      "fields": [{ "fieldPath": "userId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" }]
+    },
+    {
+      "collectionGroup": "clicks",
+      "queryScope": "COLLECTION",
+      "fields": [{ "fieldPath": "linkId", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }]
+    }
+  ],
+  "fieldOverrides": []
+}
+
