@@ -355,7 +355,7 @@ const superAdminLinks: NavItem[] = [
 export function DashboardNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const { toast } = useToast()
   const links = user?.role === "superadmin" ? superAdminLinks : adminLinks
   const [openItems, setOpenItems] = useState<string[]>([])
@@ -403,7 +403,7 @@ export function DashboardNav() {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await logout()
+      await signOut()
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account.",
