@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import DashboardShell from "@/components/dashboard/dashboard-shell"
 import { formatDistanceToNow } from "date-fns"
 import { Link } from "@/lib/firebase/database-schema"
+import { getAuthToken, createAuthHeader } from "@/lib/auth-helpers"
 
 export default function LinksPage() {
   const { user } = useAuth()
@@ -41,16 +42,14 @@ export default function LinksPage() {
   const fetchLinks = async () => {
     setIsLoading(true)
     try {
-      const token = await user?.getIdToken()
+      const token = await getAuthToken(user)
       
       if (!token) {
         throw new Error("You must be logged in to view links")
       }
       
       const response = await fetch("/api/links", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+        headers: createAuthHeader(token)
       })
       
       if (!response.ok) {
@@ -74,7 +73,7 @@ export default function LinksPage() {
   // Handle link deletion
   const handleDeleteLink = async (linkId: string) => {
     try {
-      const token = await user?.getIdToken()
+      const token = await getAuthToken(user)
       
       if (!token) {
         throw new Error("You must be logged in to delete links")
@@ -82,9 +81,7 @@ export default function LinksPage() {
       
       const response = await fetch(`/api/links/${linkId}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+        headers: createAuthHeader(token)
       })
       
       if (!response.ok) {
