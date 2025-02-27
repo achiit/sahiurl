@@ -12,6 +12,10 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
+export const metadata = {
+  generator: 'v0.dev'
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -19,17 +23,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
-      <AuthProvider>
-        <body className={inter.className}>
-          {children}
-        </body>
-      </AuthProvider>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
+      </body>
     </html>
   )
 }
-
-import './globals.css'
-
-export const metadata = {
-      generator: 'v0.dev'
-    };
