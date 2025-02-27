@@ -164,10 +164,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }))
   }
 
-  return (
-    <ToastContext.Provider value={{ toasts: state.toasts, toast, dismiss }}>
-      {children}
-    </ToastContext.Provider>
+  return React.createElement(
+    ToastContext.Provider, 
+    { value: { toasts: state.toasts, toast, dismiss } },
+    children
   )
 }
 
