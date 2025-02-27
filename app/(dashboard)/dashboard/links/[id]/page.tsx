@@ -19,6 +19,7 @@ import * as z from "zod"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { format } from "date-fns"
+import { getAuthToken, createAuthHeader } from "@/lib/auth-helpers"
 
 const formSchema = z.object({
   title: z.string().optional(),
@@ -61,16 +62,14 @@ export default function EditLinkPage({ params }: { params: { id: string } }) {
   const fetchLink = async () => {
     setIsLoading(true)
     try {
-      const token = await user?.getIdToken()
+      const token = await getAuthToken(user)
       
       if (!token) {
         throw new Error("Authentication required")
       }
       
       const response = await fetch(`/api/links/${params.id}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+        headers: createAuthHeader(token)
       })
       
       if (!response.ok) {
@@ -119,7 +118,7 @@ export default function EditLinkPage({ params }: { params: { id: string } }) {
     setIsSaving(true)
 
     try {
-      const token = await user.getIdToken()
+      const token = await getAuthToken(user)
 
       const response = await fetch(`/api/links/${params.id}`, {
         method: "PATCH",
