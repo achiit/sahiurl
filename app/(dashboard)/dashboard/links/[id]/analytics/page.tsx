@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth, AuthUser } from "@/lib/auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardShell from "@/components/dashboard/dashboard-shell"
@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatDistanceToNow, format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "@/lib/firebase/database-schema"
+import { getAuthToken, createAuthHeader } from "@/lib/auth-helpers"
 
 interface LinkStatus {
   status: 'active' | 'inactive' | 'expired'
@@ -36,16 +37,14 @@ export default function LinkAnalyticsPage({ params }: { params: { id: string } }
   const fetchLinkAnalytics = async () => {
     setIsLoading(true)
     try {
-      const token = await user?.getIdToken()
+      const token = await getAuthToken(user)
       
       if (!token) {
         throw new Error("Authentication required")
       }
       
       const response = await fetch(`/api/links/${params.id}/analytics?period=${timeframe}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+        headers: createAuthHeader(token)
       })
       
       if (!response.ok) {
