@@ -1,6 +1,4 @@
-import { AuthUser } from '@/lib/auth-context'
-
-export async function getAuthToken(user: AuthUser | null): Promise<string | null> {
+export async function getAuthToken(user: any | null): Promise<string | null> {
   if (!user) return null
   try {
     return await user.getIdToken()
@@ -17,4 +15,8 @@ export function createAuthHeader(token: string | null): Headers {
     headers.append('Authorization', `Bearer ${token}`)
   }
   return headers
+}
+
+export function isFirebaseAuthUser(user: any): boolean {
+  return user && typeof user.getIdToken === 'function'
 } 
