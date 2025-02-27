@@ -68,7 +68,10 @@
     "tailwindcss-animate": "^1.0.7",
     "ua-parser-js": "^2.0.2",
     "vaul": "^0.9.6",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "styled-jsx": "^5.1.2",
+    "caniuse-lite": "^1.0.30001587",
+    "browserslist": "^4.23.0"
   },
   "devDependencies": {
     "@types/node": "^22",
