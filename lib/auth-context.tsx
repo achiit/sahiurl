@@ -1,87 +1,36 @@
-"use client"
+import type React from "react"
+import "@/styles/globals.css"
+import { Inter } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "@/lib/auth-context"
+import { Toaster } from "@/components/ui/toaster"
 
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { User } from "@/types/database"
-import { auth } from '@/lib/firebase/config'
-import { signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth'
+// Initialize the Inter font
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
-// Define the AuthContext type
-interface AuthContextType {
-  user: User | null
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signOut: () => Promise<void>
-}
+export const metadata = {
+  generator: 'v0.dev'
+};
 
-// Create the context
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-// Export the provider component
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      try {
-        if (firebaseUser) {
-          // Add your user data fetching logic here
-          const token = await firebaseUser.getIdToken()
-          const response = await fetch(`/api/user/${firebaseUser.uid}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          const userData = await response.json()
-          setUser(userData)
-        } else {
-          setUser(null)
-        }
-      } catch (error) {
-        console.error("Auth state change error:", error)
-        setUser(null)
-      } finally {
-        setLoading(false)
-      }
-    })
-
-    return () => unsubscribe()
-  }, [])
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password)
-    } catch (error) {
-      console.error("Sign in error:", error)
-      throw error
-    }
-  }
-
-  const signOut = async () => {
-    try {
-      await firebaseSignOut(auth)
-      router.push('/login')
-    } catch (error) {
-      console.error("Sign out error:", error)
-      throw error
-    }
-  }
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   )
 }
-
-// Export a hook to use the auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  
-  return context
-}
-
