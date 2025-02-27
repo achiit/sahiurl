@@ -24,7 +24,6 @@ export interface SuspiciousActivity {
 // IP Whitelist Types
 export interface WhitelistedIP {
   id: string
-  ip: string // Added this field that was missing
   ipAddress: string
   description: string
   addedBy: string
@@ -42,21 +41,17 @@ export interface APIKey {
   id: string
   name: string
   key: string
-  createdAt: Date
-  expiresAt?: Date
-  lastUsed?: Date
-  status: SecurityStatus
+  status: "active" | "revoked"
   permissions: string[]
+  scopes: string[]
+  lastUsed?: Date
+  expiresAt?: Date
+  createdAt: Date
   rateLimits: {
     requests: number
-    interval: "minute" | "hour" | "day"
+    interval: string
   }
-  metadata?: {
-    createdBy: string
-    environment: "development" | "production"
-    allowedIPs?: string[]
-    allowedDomains?: string[]
-  }
+  metadata?: Record<string, any>
 }
 
 export interface SecurityLog {

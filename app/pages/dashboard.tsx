@@ -1,12 +1,15 @@
 import CreateLink from "@/components/CreateLink";
-import LinksSection from "@/components/LinksSection";
+import { RecentLinks } from "@/components/dashboard/recent-links";
+import { useLinks } from "@/lib/hooks/use-links"
 
 export default function Dashboard() {
+    const { links } = useLinks()
+    
     return (
-        <div>
+        <div className="p-6">
             <h1>Dashboard</h1>
             <CreateLink />
-            <LinksSection />
+            <RecentLinks links={links} />
         </div>
     );
 } 

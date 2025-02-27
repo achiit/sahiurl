@@ -30,7 +30,7 @@ export const FIREBASE_URLS = {
   STORAGE_URL: "https://sahiurl.firebasestorage.app",
 }
 
-export const BASE_URL = "https://sahiurl.in"
+export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://sahiurl.in"
 
 export { auth, db }
 

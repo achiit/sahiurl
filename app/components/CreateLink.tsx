@@ -39,7 +39,9 @@ export default function CreateLink() {
         setIsLoading(true);
 
         try {
-            // Get the user's token
+            if (!user?.getIdToken) {
+                throw new Error("User not authenticated");
+            }
             const token = await user?.getIdToken();
             
             if (!token) {

@@ -16,13 +16,12 @@ export interface VisitorSession {
     }[]
   }[]
   source: {
-    referrer?: string
-    campaign?: string
-    medium?: string
-    term?: string
+    ip: string
+    referrer: string
+    campaign: string
   }
   device: {
-    type: "desktop" | "mobile" | "tablet"
+    type: 'mobile' | 'tablet' | 'desktop'
     browser: string
     os: string
     screenSize: string
@@ -33,9 +32,8 @@ export interface VisitorSession {
     city?: string
   }
   performance: {
-    pageLoadTime: number
-    firstContentfulPaint: number
-    largestContentfulPaint: number
+    connectionType: string
+    memoryStatus: string
   }
 }
 

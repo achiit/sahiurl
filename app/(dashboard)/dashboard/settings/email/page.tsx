@@ -193,7 +193,9 @@ export default function EmailTemplatesPage() {
                   className="min-h-[200px] font-mono"
                   required
                 />
-                <p className="text-sm text-muted-foreground">Use {{ variable }} syntax for dynamic content</p>
+                <p className="text-sm text-muted-foreground">
+                  Use {'{{ variable }}'} syntax for dynamic content
+                </p>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowCreateDialog(false)}>

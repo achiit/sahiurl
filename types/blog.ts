@@ -59,6 +59,10 @@ export interface BlogPost {
       label: string
     }[]
   }
+  sections: Array<{
+    type: "intro" | "main" | "conclusion" | "interactive"
+    elements: ("text" | "image" | "quote" | "list" | "poll" | "quiz" | "calculator")[]
+  }>
 }
 
 export interface BlogComment {

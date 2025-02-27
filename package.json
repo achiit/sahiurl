@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "npx browserslist@latest --update-db",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -40,8 +42,12 @@
     "@radix-ui/react-tooltip": "^1.1.6",
     "@tailwindcss/typography": "latest",
     "@types/react": "latest",
+    "@types/react-day-picker": "^5.3.0",
     "@types/react-dom": "latest",
     "autoprefixer": "^10.4.20",
+    "axios": "^1.6.2",
+    "browserslist": "^4.23.0",
+    "caniuse-lite": "^1.0.30001665",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
@@ -56,12 +62,14 @@
     "next": "14.2.16",
     "next-themes": "latest",
     "react": "^18",
-    "react-day-picker": "latest",
+    "react-day-picker": "^9.5.1",
     "react-dom": "^18",
+    "react-error-boundary": "^5.0.0",
     "react-hook-form": "^7.54.1",
     "react-resizable-panels": "^2.1.7",
     "recharts": "latest",
     "sonner": "^1.7.1",
+    "styled-jsx": "^5.1.2",
     "tailwind-merge": "^2.5.5",
     "tailwindcss": "latest",
     "tailwindcss-animate": "^1.0.7",
@@ -74,7 +82,12 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "postcss": "^8",
+    "styled-jsx": "5.1.2",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
+  },
+  "resolutions": {
+    "caniuse-lite": "^1.0.30001665",
+    "browserslist": "^4.23.0"
   }
 }

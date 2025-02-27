@@ -4,12 +4,15 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
+import { Loader2 } from "lucide-react"
 import { auth } from "@/lib/firebase/config"
+import { getAuthToken, createAuthHeader } from "@/lib/auth-helpers"
 
 interface CreateLinkFormProps {
   onClose?: () => void
-  onSuccess?: (data: any) => void
+  onSuccess?: (link: any) => void
 }
 
 export function CreateLinkForm({ onClose, onSuccess }: CreateLinkFormProps) {
@@ -43,15 +46,12 @@ export function CreateLinkForm({ onClose, onSuccess }: CreateLinkFormProps) {
         throw new Error("You must be logged in to create links")
       }
       
-      const token = await user.getIdToken()
+      const token = await getAuthToken(user)
       
       // Make the API request
       const response = await fetch("/api/links/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+        headers: createAuthHeader(token),
         body: JSON.stringify({
           originalUrl,
           title: title || undefined,
@@ -67,9 +67,9 @@ export function CreateLinkForm({ onClose, onSuccess }: CreateLinkFormProps) {
       
       // Success! Show a toast and refresh the page/component
       toast({
-        title: "Link created!",
-        description: "Your short URL is ready to use.",
-        variant: "success"
+        title: "Link created",
+        description: "Your link has been successfully created.",
+        variant: "default"
       })
       
       // Call the success callback if provided
@@ -82,7 +82,7 @@ export function CreateLinkForm({ onClose, onSuccess }: CreateLinkFormProps) {
       setTitle("")
       setCustomCode("")
       
-      // Close the modal if needed
+      // Close the dialog if needed
       if (onClose) {
         onClose()
       }
@@ -91,10 +91,10 @@ export function CreateLinkForm({ onClose, onSuccess }: CreateLinkFormProps) {
       router.refresh()
       
     } catch (error: any) {
-      console.error("Create link error:", error)
+      console.error("Error creating link:", error)
       toast({
-        title: "Error creating link",
-        description: error.message || "Something went wrong",
+        title: "Error",
+        description: error.message || "Failed to create link. Please try again.",
         variant: "destructive"
       })
     } finally {

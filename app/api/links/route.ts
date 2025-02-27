@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getUserLinks } from "@/lib/firebase/links"
-import { auth } from "@/lib/firebase/admin"
+import { auth, firestore } from "@/lib/firebase/admin"
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") as any || undefined
 
     // Get the user's links
-    const links = await getUserLinks(userId, {
+    const links = await getUserLinks({
+      userId,
       limit,
       orderBy,
       orderDir,

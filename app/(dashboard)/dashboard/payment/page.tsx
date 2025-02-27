@@ -59,7 +59,9 @@ export default function PaymentPage() {
           <CardContent className="space-y-4">
             <div className="flex items-baseline space-x-2">
               <IndianRupee className="h-4 w-4" />
-              <span className="text-4xl font-bold">{user?.balance?.toLocaleString()}</span>
+              <div className="text-2xl font-bold">
+                ₹{user?.finances?.availableBalance?.toLocaleString()}
+              </div>
             </div>
             <p className="text-sm text-muted-foreground">Minimum withdrawal amount: ₹1,000</p>
           </CardContent>
@@ -73,11 +75,11 @@ export default function PaymentPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Total Earnings</p>
-                <p className="text-2xl font-bold">₹{user?.totalEarnings?.toLocaleString()}</p>
+                <p className="text-2xl font-bold">₹{user?.finances?.totalEarnings?.toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Pending Payment</p>
-                <p className="text-2xl font-bold">₹{user?.pendingPayment?.toLocaleString()}</p>
+                <p className="text-2xl font-bold">₹{user?.finances?.pendingBalance?.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>

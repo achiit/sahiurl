@@ -35,6 +35,12 @@ export interface User {
     totalLinks: number;
     totalClicks: number;
     totalEarnings: number;
+    balance: number;
+  };
+  finances?: {
+    totalEarnings: number;
+    availableBalance: number;
+    pendingBalance: number;
   };
 }
 
@@ -48,7 +54,7 @@ export interface Link {
   createdAt: Date;
   updatedAt: Date;
   expiresAt?: Date;
-  status: 'active' | 'disabled' | 'expired';
+  status: 'active' | 'inactive' | 'expired' | 'disabled';
   settings: {
     redirectDelay: number;
     password?: string;
@@ -97,12 +103,13 @@ export interface BlogPost {
   content: string;
   excerpt: string;
   author: string;
-  publishedAt: Date;
-  updatedAt: Date;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'archived';
   tags: string[];
   featuredImage?: string;
-  linkId?: string; // If blog post is associated with a specific link
+  linkId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt?: Date;
 }
 
 export interface Setting {

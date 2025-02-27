@@ -9,11 +9,16 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
-import { Link as LinkIcon, ArrowLeft, Globe, Users, Clock, ExternalLink, Copy } from "lucide-react"
+import { Link as LinkIcon, ArrowLeft, Globe, Users, Clock, ExternalLink, Copy, DollarSign } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDistanceToNow, format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "@/lib/firebase/database-schema"
+import { getAuthToken, createAuthHeader } from "@/lib/auth-helpers"
+
+interface LinkStatus {
+  status: 'active' | 'inactive' | 'expired'
+}
 
 export default function LinkAnalyticsPage({ params }: { params: { id: string } }) {
   const { user } = useAuth()
@@ -32,16 +37,14 @@ export default function LinkAnalyticsPage({ params }: { params: { id: string } }
   const fetchLinkAnalytics = async () => {
     setIsLoading(true)
     try {
-      const token = await user?.getIdToken()
+      const token = await getAuthToken(user)
       
       if (!token) {
         throw new Error("Authentication required")
       }
       
       const response = await fetch(`/api/links/${params.id}/analytics?period=${timeframe}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+        headers: createAuthHeader(token)
       })
       
       if (!response.ok) {
@@ -74,6 +77,9 @@ export default function LinkAnalyticsPage({ params }: { params: { id: string } }
   }
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d']
+
+  // Normalize status so that "disabled" is treated as "inactive"
+  const normalizedStatus = linkData?.status === 'disabled' ? 'inactive' : linkData?.status;
 
   return (
     <DashboardShell>
@@ -176,14 +182,16 @@ export default function LinkAnalyticsPage({ params }: { params: { id: string } }
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Status</p>
-                  <Badge 
+                  <Badge
                     variant={
-                      linkData?.status === "active" ? "default" : 
-                      linkData?.status === "inactive" ? "secondary" : 
-                      "destructive"
+                      normalizedStatus === "active"
+                        ? "default"
+                        : normalizedStatus === "inactive"
+                        ? "secondary"
+                        : "destructive"
                     }
                   >
-                    {linkData?.status || 'Unknown'}
+                    {normalizedStatus?.toUpperCase() || "UNKNOWN"}
                   </Badge>
                 </div>
                 {linkData?.expiresAt && (

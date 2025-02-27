@@ -2,18 +2,26 @@ import { formatDistanceToNow } from "date-fns"
 import { ExternalLink, LinkIcon as Link2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Link } from "@/lib/firebase/database-schema"
+import { useState, useEffect } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface RecentLinksProps {
-  links: Link[]
+  links?: Array<Link & { status: 'active' | 'inactive' | 'expired' | 'disabled' }>
 }
 
-export default function RecentLinks({ links }: RecentLinksProps) {
+export function RecentLinks({ links = [] }: RecentLinksProps) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, [links]);
+
   return (
-    <div className="space-y-4">
-      {links.length === 0 ? (
-        <div className="text-center py-4">
-          <p className="text-sm text-muted-foreground">No links created yet</p>
-        </div>
+    <div className="space-y-2">
+      {isLoading ? (
+        [...Array(5)].map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))
       ) : (
         links.map((link) => (
           <div key={link.id} className="flex items-center justify-between">

@@ -10,6 +10,7 @@ import {
   orderBy,
   serverTimestamp,
   type Timestamp,
+  DocumentSnapshot,
 } from "firebase/firestore"
 import { db } from "@/lib/firebase/config"
 import type { SuspiciousActivity, WhitelistedIP, APIKey, SecurityLog } from "@/types/security"
@@ -152,13 +153,14 @@ class SecurityService {
           id: doc.id,
           name: data.name,
           key: data.key,
+          status: data.status,
+          scopes: data.scopes || [],
+          permissions: data.permissions || [],
+          rateLimits: data.rateLimits || { requests: 100, interval: 'minute' },
           createdAt: (data.createdAt as Timestamp).toDate(),
           expiresAt: data.expiresAt ? (data.expiresAt as Timestamp).toDate() : undefined,
           lastUsed: data.lastUsed ? (data.lastUsed as Timestamp).toDate() : undefined,
-          status: data.status,
-          permissions: data.permissions,
-          rateLimits: data.rateLimits,
-          metadata: data.metadata,
+          metadata: data.metadata || {}
         } as APIKey
       })
     } catch (error) {
@@ -167,27 +169,31 @@ class SecurityService {
     }
   }
 
-  async createAPIKey(key: Omit<APIKey, "id" | "createdAt">): Promise<APIKey> {
-    try {
-      const docRef = await addDoc(collection(db, "api_keys"), {
-        ...key,
-        createdAt: serverTimestamp(),
-      })
+  async createAPIKey(data: Omit<APIKey, "id" | "createdAt">): Promise<APIKey> {
+    const docRef = await addDoc(collection(db, "api_keys"), {
+      ...data,
+      createdAt: serverTimestamp(),
+      scopes: data.scopes || [],
+      status: data.status || 'active'
+    })
+    return this.convertToAPIKey(await getDoc(docRef))
+  }
 
-      const doc = await getDoc(docRef)
-      const data = doc.data()!
-
-      return {
-        id: doc.id,
-        ...data,
-        createdAt: (data.createdAt as Timestamp).toDate(),
-        expiresAt: data.expiresAt ? (data.expiresAt as Timestamp).toDate() : undefined,
-        lastUsed: data.lastUsed ? (data.lastUsed as Timestamp).toDate() : undefined,
-      } as APIKey
-    } catch (error) {
-      console.error("Failed to create API key:", error)
-      throw error
-    }
+  private convertToAPIKey(doc: DocumentSnapshot): APIKey {
+    const data = doc.data()!
+    return {
+      id: doc.id,
+      name: data.name,
+      key: data.key,
+      status: data.status,
+      scopes: data.scopes || [],
+      permissions: data.permissions || [],
+      rateLimits: data.rateLimits || { requests: 100, interval: 'minute' },
+      createdAt: (data.createdAt as Timestamp).toDate(),
+      expiresAt: data.expiresAt ? (data.expiresAt as Timestamp).toDate() : undefined,
+      lastUsed: data.lastUsed ? (data.lastUsed as Timestamp).toDate() : undefined,
+      metadata: data.metadata || {}
+    } as APIKey
   }
 
   // Security Logs

@@ -177,7 +177,7 @@ export function Header() {
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user?.name}</p>
                 <p className="text-xs leading-none text-zinc-500">{user?.email}</p>
-                <p className="text-xs text-emerald-600 mt-1 font-medium">Balance: {formatCurrency(user?.balance)}</p>
+                <p className="text-xs text-emerald-600 mt-1 font-medium">Balance: {formatCurrency(user?.stats?.balance ?? 0)}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

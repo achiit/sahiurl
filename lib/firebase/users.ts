@@ -38,6 +38,7 @@ export async function createUser(userId: string, data: Partial<User>): Promise<U
       totalLinks: 0,
       totalClicks: 0,
       totalEarnings: 0,
+      balance: 0
     },
   };
   
@@ -68,12 +69,11 @@ export async function getUser(userId: string): Promise<User | null> {
     ...userData,
     createdAt: userData.createdAt instanceof Timestamp ? userData.createdAt.toDate() : new Date(userData.createdAt),
     lastLoginAt: userData.lastLoginAt instanceof Timestamp ? userData.lastLoginAt.toDate() : new Date(userData.lastLoginAt),
-    subscription: {
-      ...userData.subscription,
-      endsAt: userData.subscription.endsAt instanceof Timestamp 
-        ? userData.subscription.endsAt.toDate() 
-        : userData.subscription.endsAt ? new Date(userData.subscription.endsAt) : undefined,
-    }
+    subscription: userData.subscription || {
+      plan: 'free',
+      status: 'active',
+      endsAt: undefined
+    },
   };
 }
 
@@ -144,12 +144,31 @@ export async function getAllUsers(options: {
       ...data,
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt),
       lastLoginAt: data.lastLoginAt instanceof Timestamp ? data.lastLoginAt.toDate() : new Date(data.lastLoginAt),
-      subscription: {
-        ...data.subscription,
-        endsAt: data.subscription.endsAt instanceof Timestamp 
-          ? data.subscription.endsAt.toDate() 
-          : data.subscription.endsAt ? new Date(data.subscription.endsAt) : undefined,
-      }
+      subscription: data.subscription || {
+        plan: 'free',
+        status: 'active',
+        endsAt: undefined
+      },
     };
   });
+}
+
+export async function listUsers(): Promise<User[]> {
+  const q = query(collection(db, "users"))
+  const querySnapshot = await getDocs(q)
+  
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data()
+    return {
+      uid: doc.id,
+      ...data,
+      subscription: data.subscription || {
+        plan: 'free',
+        status: 'active',
+        endsAt: undefined
+      },
+      createdAt: data.createdAt.toDate(),
+      lastLoginAt: data.lastLoginAt.toDate(),
+    } as User
+  })
 } 

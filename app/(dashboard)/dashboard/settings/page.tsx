@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import type { AuthUser } from "@/lib/auth-context"
 
 const profileFormSchema = z.object({
   displayName: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -31,7 +32,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 type SettingsFormValues = z.infer<typeof settingsFormSchema>
 
 export default function SettingsPage() {
-  const { user } = useAuth()
+  const { user } = useAuth() as { user: AuthUser | null }
   const { toast } = useToast()
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [isLoadingSettings, setIsLoadingSettings] = useState(true)

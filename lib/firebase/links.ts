@@ -13,20 +13,23 @@ import {
   serverTimestamp,
   Timestamp,
   increment,
+  QueryConstraint,
+  DocumentSnapshot,
+  DocumentData,
 } from "firebase/firestore"
-import { db, BASE_URL } from "./config"
-import type { Link } from "@/types/database"
+import { db } from "./config"
+import type { Link as LinkType } from "@/types/database"
 import { nanoid } from "nanoid"
 import { updateUserStats } from "./users"
-import { generateShortCode, getFullShortUrl } from '../utils/url'
+import { generateShortCode, getFullShortUrl, BASE_URL } from '../utils/url'
 
 interface LinkAnalytics {
   clicks: number
   uniqueVisitors: number
   countries: Record<string, number>
-  referrers: Record<string, number>
+  referrerDistribution: Record<string, number>
   browsers: Record<string, number>
-  devices: Record<string, number>
+  deviceDistribution: Record<string, number>
   earnings: number
 }
 
@@ -47,21 +50,29 @@ export interface Link {
   createdAt: Date
   updatedAt: Date
   expiresAt?: Date
-  status: 'active' | 'inactive' | 'expired'
+  status: 'active' | 'inactive' | 'disabled' | 'expired'
   settings: LinkSettings
   analytics: LinkAnalytics
   campaign?: string
   tags?: string[]
+  fraudProtection: {
+    suspiciousClicks: number
+    blockedIPs: string[]
+    lastFraudCheck: Date
+  }
+  revenueShare: {
+    publisherRate: number
+    platformRate: number
+  }
 }
 
-// Generate a random short code
-function generateShortCode(length = 6): string {
-  return nanoid(length)
-}
-
-// Add a function to get the full short URL
-export function getFullShortUrl(shortCode: string): string {
-  return `${BASE_URL}/${shortCode}`
+export interface GetUserLinksOptions {
+  userId: string
+  status?: "active" | "archived"
+  search?: string
+  orderBy?: "clicks" | "createdAt" | "lastClickedAt"
+  orderDir?: "asc" | "desc"
+  limit?: number
 }
 
 export async function createLink(
@@ -77,7 +88,7 @@ export async function createLink(
     blogPages?: number
     tags?: string[]
   } = {},
-): Promise<Link> {
+): Promise<LinkType> {
   try {
     // Generate or use custom short code
     let shortCode = options.customCode
@@ -100,7 +111,7 @@ export async function createLink(
       }
 
       // Reset for next attempt
-      shortCode = null
+      shortCode = undefined
       attempts++
     }
 
@@ -108,7 +119,7 @@ export async function createLink(
       throw new Error("Failed to generate unique short code")
     }
 
-    const link: Omit<Link, "id"> = {
+    const link: Omit<LinkType, "id"> = {
       userId,
       originalUrl,
       shortCode,
@@ -127,14 +138,27 @@ export async function createLink(
       analytics: {
         clicks: 0,
         uniqueVisitors: 0,
-        countries: {},
-        referrers: {},
-        browsers: {},
-        devices: {},
         earnings: 0,
+        bounceRate: 0,
+        averageTimeOnPage: 0,
+        conversionRate: 0,
+        geoDistribution: {},
+        deviceDistribution: {},
+        referrerDistribution: {},
+        hourlyClickDistribution: new Array(24).fill(0),
+        dailyClickDistribution: new Array(7).fill(0)
       },
       campaign: options.campaign,
       tags: options.tags,
+      fraudProtection: {
+        suspiciousClicks: 0,
+        blockedIPs: [],
+        lastFraudCheck: new Date()
+      },
+      revenueShare: {
+        publisherRate: 0,
+        platformRate: 0
+      }
     }
 
     const docRef = await addDoc(collection(db, "links"), {
@@ -156,7 +180,7 @@ export async function createLink(
   }
 }
 
-export async function getLinkByShortCode(shortCode: string): Promise<Link | null> {
+export async function getLinkByShortCode(shortCode: string): Promise<LinkType | null> {
   try {
     const q = query(collection(db, "links"), where("shortCode", "==", shortCode))
     const querySnapshot = await getDocs(q)
@@ -169,28 +193,29 @@ export async function getLinkByShortCode(shortCode: string): Promise<Link | null
     return {
       id: doc.id,
       ...doc.data()
-    } as Link
+    } as LinkType
   } catch (error) {
     console.error("Error getting link:", error)
     return null
   }
 }
 
-export async function getUserLinks(userId: string, options: {
-  limit?: number
-  orderBy?: 'createdAt' | 'updatedAt' | 'analytics.clicks'
-  orderDir?: 'asc' | 'desc'
-  status?: 'active' | 'disabled' | 'expired'
-} = {}): Promise<Link[]> {
+export async function getUserLinks(options: GetUserLinksOptions): Promise<LinkType[]> {
   const linksRef = collection(db, "links")
-  let constraints = [where("userId", "==", userId)]
+  let constraints: QueryConstraint[] = []
+  
+  constraints.push(where("userId", "==", options.userId))
   
   if (options.status) {
     constraints.push(where("status", "==", options.status))
   }
   
+  if (options.search) {
+    constraints.push(where("keywords", "array-contains", options.search.toLowerCase()))
+  }
+  
   if (options.orderBy) {
-    constraints.push(orderBy(options.orderBy, options.orderDir || 'desc'))
+    constraints.push(orderBy(options.orderBy, options.orderDir || "desc"))
   } else {
     constraints.push(orderBy("createdAt", "desc"))
   }
@@ -203,7 +228,7 @@ export async function getUserLinks(userId: string, options: {
   const querySnapshot = await getDocs(q)
   
   return querySnapshot.docs.map((doc) => {
-    const data = doc.data() as Omit<Link, 'id'>
+    const data = doc.data() as Omit<LinkType, 'id'>
     return {
       id: doc.id,
       ...data,
@@ -216,28 +241,13 @@ export async function getUserLinks(userId: string, options: {
           ? data.analytics.lastClickedAt.toDate()
           : data.analytics.lastClickedAt ? new Date(data.analytics.lastClickedAt) : undefined,
       }
-    } as Link
+    } as LinkType
   })
 }
 
-export async function updateLink(id: string, updates: Partial<Link>): Promise<Link> {
-  const linkRef = doc(db, "links", id)
-  const linkDoc = await getDoc(linkRef)
-  
-  if (!linkDoc.exists()) {
-    throw new Error("Link not found")
-  }
-  
-  // Ensure these fields aren't directly updated
-  const { id: linkId, userId, createdAt, analytics, ...validUpdates } = updates
-  
-  await updateDoc(linkRef, {
-    ...validUpdates,
-    updatedAt: serverTimestamp(),
-  })
-  
-  // Return the updated link
-  return await getLinkById(id) as Link
+export async function updateLink(id: string, updates: Partial<LinkType>): Promise<void> {
+  const docRef = doc(db, "links", id)
+  await updateDoc(docRef, updates)
 }
 
 export async function deleteLink(id: string): Promise<void> {
@@ -264,13 +274,13 @@ export async function recordClick(linkId: string, clickData: {
     // Update analytics
     const analytics = linkDoc.data().analytics || {}
     
-    await linkRef.update({
-      "analytics.clicks": (analytics.clicks || 0) + 1,
-      "analytics.uniqueVisitors": (analytics.uniqueVisitors || 0) + 1,
-      [`analytics.countries.${clickData.country || 'unknown'}`]: (analytics.countries?.[clickData.country || 'unknown'] || 0) + 1,
-      [`analytics.referrers.${clickData.referer || 'direct'}`]: (analytics.referrers?.[clickData.referer || 'direct'] || 0) + 1,
-      [`analytics.browsers.${clickData.browser || 'unknown'}`]: (analytics.browsers?.[clickData.browser || 'unknown'] || 0) + 1,
-      [`analytics.devices.${clickData.device || 'unknown'}`]: (analytics.devices?.[clickData.device || 'unknown'] || 0) + 1,
+    await updateDoc(linkRef, {
+      "analytics.clicks": increment(1),
+      "analytics.uniqueVisitors": increment(1),
+      [`analytics.countries.${clickData.country || 'unknown'}`]: increment(1),
+      [`analytics.referrerDistribution.${clickData.referer || 'direct'}`]: increment(1),
+      [`analytics.browsers.${clickData.browser || 'unknown'}`]: increment(1),
+      [`analytics.deviceDistribution.${clickData.device || 'unknown'}`]: increment(1),
       updatedAt: serverTimestamp(),
     })
 
@@ -323,7 +333,7 @@ export async function getLinkStats(linkId: string): Promise<{
   }
 }
 
-export async function getLinkById(id: string): Promise<Link | null> {
+export async function getLinkById(id: string): Promise<LinkType | null> {
   const linkRef = doc(db, "links", id)
   const linkDoc = await getDoc(linkRef)
   
@@ -331,7 +341,7 @@ export async function getLinkById(id: string): Promise<Link | null> {
     return null
   }
   
-  const data = linkDoc.data() as Omit<Link, 'id'>
+  const data = linkDoc.data() as Omit<LinkType, 'id'>
   
   return {
     id: linkDoc.id,
@@ -345,6 +355,54 @@ export async function getLinkById(id: string): Promise<Link | null> {
         ? data.analytics.lastClickedAt.toDate()
         : data.analytics.lastClickedAt ? new Date(data.analytics.lastClickedAt) : undefined,
     }
-  } as Link
+  } as LinkType
+}
+
+export async function getTopLinks(userId: string) {
+  const linksRef = collection(db, "links");
+  const q = query(
+    linksRef,
+    where("userId", "==", userId),
+    orderBy("analytics.clicks", "desc"),
+    limit(5)
+  );
+  
+  try {
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching top links:", error);
+    throw error;
+  }
+}
+
+function convertToLink(doc: DocumentSnapshot): LinkType {
+  const data = doc.data()!
+  return {
+    id: doc.id,
+    ...data,
+    analytics: {
+      clicks: data.analytics?.clicks || 0,
+      uniqueVisitors: data.analytics?.uniqueVisitors || 0,
+      lastClickedAt: data.analytics?.lastClickedAt ? parseTimestamp(data.analytics.lastClickedAt) : undefined,
+      earnings: data.analytics?.earnings || 0,
+      bounceRate: data.analytics?.bounceRate || 0,
+      averageTimeOnPage: data.analytics?.averageTimeOnPage || 0,
+      conversionRate: data.analytics?.conversionRate || 0,
+      geoDistribution: data.analytics?.geoDistribution || {},
+      deviceDistribution: data.analytics?.deviceDistribution || {},
+      referrerDistribution: data.analytics?.referrerDistribution || {},
+      hourlyClickDistribution: data.analytics?.hourlyClickDistribution || [],
+      dailyClickDistribution: data.analytics?.dailyClickDistribution || []
+    }
+  } as LinkType
+}
+
+const parseTimestamp = (timestamp: Date | Timestamp | undefined): Date => {
+  if (!timestamp) return new Date()
+  return timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp)
 }
 

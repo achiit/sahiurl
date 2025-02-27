@@ -46,18 +46,34 @@ async function createInitialUserData(firebaseUser: FirebaseUser, name?: string):
   const isSuperAdmin = firebaseUser.email === "superadmin@sahiurl.in"
 
   const userData: Omit<User, "uid"> = {
-    email: firebaseUser.email!,
-    name: name || firebaseUser.displayName || firebaseUser.email!.split("@")[0],
+    email: firebaseUser.email || "",
+    name: name || firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+    photoURL: firebaseUser.photoURL,
     role: isSuperAdmin ? "superadmin" : isAdmin ? "admin" : "user",
-    balance: 0,
-    totalEarnings: 0,
-    pendingPayment: 0,
     createdAt: new Date(),
-    updatedAt: new Date(),
+    lastLoginAt: new Date(),
+    status: 'active',
+    metadata: {
+      authCreatedAt: new Date().toISOString(),
+      authLastLoginAt: new Date().toISOString()
+    },
     settings: {
       emailNotifications: true,
       paymentThreshold: 1000,
       defaultRedirectDelay: 10,
+      defaultAdSettings: {
+        enabled: false,
+        preferredAdTypes: [],
+        blogTemplateId: ""
+      },
+      twoFactorEnabled: false,
+      ipWhitelisting: false
+    },
+    stats: {
+      totalLinks: 0,
+      totalClicks: 0,
+      totalEarnings: 0,
+      balance: 0
     },
   }
 
@@ -81,18 +97,34 @@ export async function signUp(email: string, password: string, name: string): Pro
 
     // Create user document in Firestore
     const userData: Omit<User, "uid"> = {
-      email: user.email!,
+      email: user.email || "",
       name,
+      photoURL: user.photoURL || null,
       role: "user", // Default role
-      balance: 0,
-      totalEarnings: 0,
-      pendingPayment: 0,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      lastLoginAt: new Date(),
+      status: 'active',
+      metadata: {
+        authCreatedAt: new Date().toISOString(),
+        authLastLoginAt: new Date().toISOString()
+      },
       settings: {
         emailNotifications: true,
         paymentThreshold: 1000,
         defaultRedirectDelay: 10,
+        defaultAdSettings: {
+          enabled: false,
+          preferredAdTypes: [],
+          blogTemplateId: ""
+        },
+        twoFactorEnabled: false,
+        ipWhitelisting: false
+      },
+      stats: {
+        totalLinks: 0,
+        totalClicks: 0,
+        totalEarnings: 0,
+        balance: 0
       },
     }
 
@@ -147,18 +179,34 @@ export async function signInWithGoogle(): Promise<User> {
     if (!userDoc.exists()) {
       // Create new user document
       const userData: Omit<User, "uid"> = {
-        email: user.email!,
-        name: user.displayName || user.email!.split("@")[0],
+        email: user.email || "",
+        name: user.displayName || "User",
+        photoURL: user.photoURL || null,
         role: "user",
-        balance: 0,
-        totalEarnings: 0,
-        pendingPayment: 0,
         createdAt: new Date(),
-        updatedAt: new Date(),
+        lastLoginAt: new Date(),
+        status: 'active',
+        metadata: {
+          authCreatedAt: new Date().toISOString(),
+          authLastLoginAt: new Date().toISOString()
+        },
         settings: {
           emailNotifications: true,
           paymentThreshold: 1000,
           defaultRedirectDelay: 10,
+          defaultAdSettings: {
+            enabled: false,
+            preferredAdTypes: [],
+            blogTemplateId: ""
+          },
+          twoFactorEnabled: false,
+          ipWhitelisting: false
+        },
+        stats: {
+          totalLinks: 0,
+          totalClicks: 0,
+          totalEarnings: 0,
+          balance: 0
         },
       }
 
@@ -224,12 +272,20 @@ export async function getUserData(user: FirebaseUser): Promise<User | null> {
       email: data.email,
       name: data.name,
       role: data.role,
-      balance: data.balance,
-      totalEarnings: data.totalEarnings,
-      pendingPayment: data.pendingPayment,
       createdAt,
-      updatedAt,
+      lastLoginAt: new Date(),
+      status: data.status || 'active',
       settings: data.settings,
+      stats: {
+        totalLinks: data.stats?.totalLinks || 0,
+        totalClicks: data.stats?.totalClicks || 0,
+        totalEarnings: data.stats?.totalEarnings || 0,
+        balance: data.stats?.balance || 0
+      },
+      metadata: {
+        authCreatedAt: data.metadata?.authCreatedAt || new Date().toISOString(),
+        authLastLoginAt: data.metadata?.authLastLoginAt || new Date().toISOString()
+      }
     }
   } catch (error) {
     console.error("Error fetching user data:", error)
@@ -300,12 +356,35 @@ export function useUser() {
       
       // Create user document in Firestore
       const userData: Omit<User, 'uid'> = {
-        email: userCredential.user.email,
+        email: userCredential.user.email || "",
         name: name,
-        photoURL: userCredential.user.photoURL,
+        photoURL: userCredential.user.photoURL || null,
         role: 'user',
         createdAt: new Date(),
         lastLoginAt: new Date(),
+        status: 'active',
+        metadata: {
+          authCreatedAt: new Date().toISOString(),
+          authLastLoginAt: new Date().toISOString()
+        },
+        settings: {
+          emailNotifications: true,
+          paymentThreshold: 1000,
+          defaultRedirectDelay: 10,
+          defaultAdSettings: {
+            enabled: false,
+            preferredAdTypes: [],
+            blogTemplateId: ""
+          },
+          twoFactorEnabled: false,
+          ipWhitelisting: false
+        },
+        stats: {
+          totalLinks: 0,
+          totalClicks: 0,
+          totalEarnings: 0,
+          balance: 0
+        }
       }
       
       await setDoc(doc(db, 'users', userCredential.user.uid), userData)
@@ -332,12 +411,35 @@ export function useUser() {
       if (!userDoc.exists()) {
         // Create new user document for Google sign-ins
         const userData: Omit<User, 'uid'> = {
-          email: userCredential.user.email,
-          name: userCredential.user.displayName,
-          photoURL: userCredential.user.photoURL,
+          email: userCredential.user.email || "",
+          name: userCredential.user.displayName || "User",
+          photoURL: userCredential.user.photoURL || null,
           role: 'user',
           createdAt: new Date(),
           lastLoginAt: new Date(),
+          status: 'active',
+          metadata: {
+            authCreatedAt: new Date().toISOString(),
+            authLastLoginAt: new Date().toISOString()
+          },
+          settings: {
+            emailNotifications: true,
+            paymentThreshold: 1000,
+            defaultRedirectDelay: 10,
+            defaultAdSettings: {
+              enabled: false,
+              preferredAdTypes: [],
+              blogTemplateId: ""
+            },
+            twoFactorEnabled: false,
+            ipWhitelisting: false
+          },
+          stats: {
+            totalLinks: 0,
+            totalClicks: 0,
+            totalEarnings: 0,
+            balance: 0
+          }
         }
         
         await setDoc(doc(db, 'users', userCredential.user.uid), userData)
@@ -360,7 +462,6 @@ export function useUser() {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth)
-      router.push('/login')
     } catch (error: any) {
       console.error("Sign out error:", error)
       throw error

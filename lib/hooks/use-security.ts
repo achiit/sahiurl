@@ -86,21 +86,21 @@ export function useSecurity() {
     }
   }, [handleError])
 
-  const createAPIKey = useCallback(
-    async (key: Omit<APIKey, "id" | "key">) => {
-      try {
-        setIsLoading(true)
-        const result = await securityService.createAPIKey(key)
-        return result
-      } catch (error) {
-        handleError(error)
-        return null
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [handleError],
-  )
+  const createAPIKey = useCallback(async (keyData: Omit<APIKey, 'id' | 'createdAt'>) => {
+    try {
+      setIsLoading(true)
+      const newKey = await securityService.createAPIKey({
+        ...keyData,
+        scopes: keyData.scopes || []
+      })
+      return newKey
+    } catch (error) {
+      handleError(error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }, [handleError])
 
   // Security Logs Handlers
   const getSecurityLogs = useCallback(async () => {
@@ -127,5 +127,12 @@ export function useSecurity() {
     createAPIKey,
     getSecurityLogs,
   }
+}
+
+function generateAPIKey(): string {
+  const buffer = crypto.getRandomValues(new Uint8Array(32))
+  return Array.from(buffer)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
 }
 

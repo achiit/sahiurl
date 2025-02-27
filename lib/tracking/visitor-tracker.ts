@@ -1,16 +1,19 @@
 import type { VisitorSession, TrackingEvent } from "@/types/tracking"
+import UAParser from "ua-parser-js"
 
 export class VisitorTracker {
   private static instance: VisitorTracker
   private currentSession: VisitorSession | null = null
+  private readonly userAgent: string
 
-  private constructor() {
+  constructor(userAgent: string) {
+    this.userAgent = userAgent
     this.initializeTracking()
   }
 
   public static getInstance(): VisitorTracker {
     if (!VisitorTracker.instance) {
-      VisitorTracker.instance = new VisitorTracker()
+      VisitorTracker.instance = new VisitorTracker(navigator.userAgent)
     }
     return VisitorTracker.instance
   }
@@ -38,13 +41,13 @@ export class VisitorTracker {
       visitorId,
       startTime: new Date(),
       pagesViewed: [],
-      device: this.getDeviceInfo(),
-      location: { country: "Unknown" }, // Will be updated via API
+      device: this.parseDeviceInfo(),
+      location: this.getGeoLocation(),
+      source: this.getTrafficSource(),
       performance: {
-        pageLoadTime: 0,
-        firstContentfulPaint: 0,
-        largestContentfulPaint: 0,
-      },
+        connectionType: this.getConnectionType(),
+        memoryStatus: this.getMemoryStatus()
+      }
     }
 
     // Save session start
@@ -82,39 +85,52 @@ export class VisitorTracker {
     if (typeof window === "undefined") return
 
     // Track Core Web Vitals
-    new PerformanceObserver((entryList) => {
-      for (const entry of entryList.getEntries()) {
-        if (entry.name === "first-contentful-paint") {
-          this.currentSession!.performance.firstContentfulPaint = entry.startTime
-        }
-        if (entry.name === "largest-contentful-paint") {
-          this.currentSession!.performance.largestContentfulPaint = entry.startTime
-        }
-      }
-      this.saveSession()
-    }).observe({ entryTypes: ["paint"] })
+    this.setupPerformanceObserver()
   }
 
-  private getDeviceInfo() {
-    if (typeof window === "undefined")
-      return {
-        type: "unknown",
-        browser: "unknown",
-        os: "unknown",
-        screenSize: "unknown",
-      }
+  private setupPerformanceObserver() {
+    // Remove firstContentfulPaint and largestContentfulPaint tracking
+  }
 
-    const ua = navigator.userAgent
-    const mobile =
-      /Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)
-    const tablet = /(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)
-
+  private parseDeviceInfo() {
+    // Casting UAParser as a constructor to bypass type issues
+    const Parser = UAParser as unknown as { new(ua: string): any }
+    const parser = new Parser(this.userAgent)
     return {
-      type: mobile ? "mobile" : tablet ? "tablet" : "desktop",
-      browser: this.getBrowser(ua),
-      os: this.getOS(ua),
-      screenSize: `${window.innerWidth}x${window.innerHeight}`,
+      type: this.getDeviceType(parser) as 'mobile' | 'tablet' | 'desktop',
+      browser: parser.getBrowser().name || 'unknown',
+      os: parser.getOS().name || 'unknown',
+      screenSize: `${window.screen.width}x${window.screen.height}`
     }
+  }
+
+  private getTrafficSource() {
+    return {
+      ip: '', // Will be populated server-side
+      referrer: document.referrer,
+      campaign: new URLSearchParams(window.location.search).get('utm_campaign') || 'direct'
+    }
+  }
+
+  private getDeviceType(parser: any): "mobile" | "tablet" | "desktop" {
+    const deviceType = parser.getDevice().type || 'desktop'
+    return deviceType === 'mobile' ? 'mobile' : 
+           deviceType === 'tablet' ? 'tablet' : 'desktop'
+  }
+
+  private getConnectionType(): string {
+    // Implementation needed
+    return "unknown"
+  }
+
+  private getMemoryStatus(): string {
+    // Implementation needed
+    return "unknown"
+  }
+
+  private getGeoLocation(): { country: string } {
+    // Implementation needed
+    return { country: "Unknown" }
   }
 
   private getBrowser(ua: string): string {

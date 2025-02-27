@@ -13,12 +13,13 @@ import {
   serverTimestamp, 
   Timestamp,
   DocumentData,
-  FieldPath
+  FieldPath,
+  DocumentSnapshot
 } from "firebase/firestore";
 import { db } from "./config";
 import { UAParser } from "ua-parser-js";
 import { updateUserStats } from "./users";
-import type { Click, Earning } from "./database-schema";
+import type { Click as ClickType, Earning } from "./database-schema";
 
 interface ClickData {
   ip: string;
@@ -29,6 +30,52 @@ interface ClickData {
   browser?: string;
   os?: string;
   device?: string;
+}
+
+interface Click {
+  id: string;
+  ip: string;
+  userAgent: string;
+  timestamp: Date;
+  earned?: number;
+  country?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
+  linkId?: string;
+  userId?: string;
+}
+
+const parseTimestamp = (timestamp: Date | Timestamp | undefined): Date => {
+  if (!timestamp) return new Date() // Fallback to current date
+  if (timestamp instanceof Timestamp) return timestamp.toDate()
+  return new Date(timestamp)
+}
+
+function convertToClick(doc: DocumentSnapshot): ClickType {
+  const data = doc.data()!
+  return {
+    id: doc.id,
+    linkId: data.linkId,
+    timestamp: parseTimestamp(data.timestamp),
+    ip: data.ip || 'unknown',
+    userAgent: data.userAgent || 'unknown',
+    // ... include any other fields as needed
+  }
+}
+
+function convertToEarning(doc: DocumentSnapshot): Earning {
+  const data = doc.data()!
+  return {
+    id: doc.id,
+    amount: data.amount,
+    timestamp: parseTimestamp(data.timestamp),
+    userId: data.userId || '',
+    linkId: data.linkId || '',
+    source: data.source || 'unknown',
+    status: data.status || 'pending',
+    // ... include any other fields as needed
+  }
 }
 
 export async function recordClick(linkId: string, clickData: ClickData) {
@@ -198,13 +245,13 @@ export async function getClickStats(linkId: string, period: 'day' | 'week' | 'mo
   const querySnapshot = await getDocs(q);
   
   // Process clicks to get stats
-  const clicks = querySnapshot.docs.map(doc => {
-    const data = doc.data();
+  const clicks: ClickType[] = querySnapshot.docs.map(doc => {
+    const data = doc.data() as Partial<ClickType>;
     return {
       id: doc.id,
       ...data,
-      timestamp: data.timestamp instanceof Timestamp ? data.timestamp.toDate() : new Date(data.timestamp),
-    };
+      timestamp: parseTimestamp(data.timestamp),
+    } as ClickType;
   });
   
   // Calculate statistics
@@ -285,13 +332,13 @@ export async function getUserAnalytics(userId: string) {
   );
   
   const clicksSnapshot = await getDocs(clicksQuery);
-  const clicks = clicksSnapshot.docs.map(doc => {
-    const data = doc.data();
+  const clicks: ClickType[] = clicksSnapshot.docs.map(doc => {
+    const data = doc.data() as Partial<ClickType>;
     return {
       id: doc.id,
       ...data,
-      timestamp: data.timestamp instanceof Timestamp ? data.timestamp.toDate() : new Date(data.timestamp),
-    };
+      timestamp: parseTimestamp(data.timestamp),
+    } as ClickType;
   });
   
   // Get data for each link

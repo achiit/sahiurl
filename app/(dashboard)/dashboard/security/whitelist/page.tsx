@@ -43,7 +43,6 @@ import type { WhitelistedIP } from "@/types/security"
 const whitelistedIPs: WhitelistedIP[] = [
   {
     id: "1",
-    ip: "192.168.1.1", // This field is now properly typed
     ipAddress: "192.168.1.1",
     description: "Office Network",
     status: "active",
@@ -55,7 +54,6 @@ const whitelistedIPs: WhitelistedIP[] = [
   },
   {
     id: "2",
-    ip: "10.0.0.1",
     ipAddress: "10.0.0.1",
     description: "Development Team",
     status: "active",
@@ -105,7 +103,6 @@ export default function IPWhitelistPage() {
     try {
       // Create a properly structured WhitelistedIP object
       const whitelistData = {
-        ip,
         ipAddress: ip,
         description,
         status: "active" as const,
@@ -268,7 +265,7 @@ export default function IPWhitelistPage() {
             <TableBody>
               {whitelistedIPs.map((ip) => (
                 <TableRow key={ip.id}>
-                  <TableCell className="font-mono">{ip.ip}</TableCell>
+                  <TableCell className="font-mono">{ip.ipAddress}</TableCell>
                   <TableCell>{ip.description}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -286,7 +283,7 @@ export default function IPWhitelistPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>{ip.addedBy}</TableCell>
-                  <TableCell>{ip.lastAccess ? ip.lastAccess.toLocaleDateString() : "Never"}</TableCell>
+                  <TableCell>{ip.lastAccessed ? ip.lastAccessed.toLocaleDateString() : "Never"}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="icon" onClick={() => handleRemoveIP(ip.id)}>

@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Search, Plus, Copy, Key, RefreshCw, Trash, Shield, Clock } from "lucide-react"
+import { nanoid } from "nanoid"
 
 // Types for future API integration
 // interface APIKey {
@@ -95,10 +96,11 @@ export default function APISecurityPage() {
         name,
         permissions,
         status: "active",
-        createdAt: new Date(),
+        key: nanoid(),
+        scopes: [],
         rateLimits: {
           requests: 1000,
-          interval: "hour",
+          interval: "minute",
         },
       })
 
@@ -325,13 +327,10 @@ export default function APISecurityPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {apiKey.rateLimits.requests}/{apiKey.rateLimits.interval}
+                    {apiKey.rateLimits ? `${apiKey.rateLimits.requests} requests/${apiKey.rateLimits.interval}` : 'Unlimited'}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      {apiKey.lastUsed ? apiKey.lastUsed.toLocaleDateString() : "Never"}
-                    </div>
+                    {apiKey.lastUsed ? apiKey.lastUsed.toLocaleDateString() : "Never"}
                   </TableCell>
                   <TableCell>
                     <Badge
