@@ -13,6 +13,7 @@ import TopLinks from "@/components/dashboard/top-links"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import type { Link } from "@/lib/firebase/database-schema"
+import { getAuthToken, createAuthHeader } from "@/lib/auth-helpers"
 
 interface DashboardStats {
   totalLinks: number
@@ -63,16 +64,14 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setIsLoading(true)
     try {
-      const token = await user?.getIdToken()
+      const token = await getAuthToken(user)
       
       if (!token) {
         throw new Error("Authentication required")
       }
       
       const response = await fetch("/api/dashboard/stats", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+        headers: createAuthHeader(token)
       })
       
       if (!response.ok) {
